@@ -1,5 +1,6 @@
 use std::{
     io::{BufWriter, Stdout, Write},
+    ops::{Div, Range, RangeInclusive},
     thread,
     time::Duration,
 };
@@ -7,7 +8,7 @@ use std::{
 use clap::ValueEnum;
 use crossterm::{
     self,
-    cursor::{self, MoveTo},
+    cursor::{self, MoveTo, MoveToColumn, MoveToRow},
     style::Print,
     terminal::{self, Clear, ClearType},
     QueueableCommand,
@@ -115,6 +116,60 @@ pub fn dissolve(out: &mut BufWriter<Stdout>) -> anyhow::Result<()> {
         out.flush()?;
 
         thread::sleep(Duration::from_millis(1));
+    }
+
+    Ok(())
+}
+
+pub fn spiral(out: &mut BufWriter<Stdout>) -> anyhow::Result<()> {
+    let (cols, rows) = terminal::size()?;
+
+    let mut h_step = 0;
+    let mut v_step = 0;
+
+    let delay = 1;
+
+    while h_step < cols.div(2) && v_step < rows.div(2) {
+        // TODO need reverse range
+        clear_col(out, h_step, v_step..=rows - v_step, delay)?;
+        clear_row(out, v_step, h_step..=cols - h_step, delay)?;
+        clear_col(out, cols - h_step, rows - v_step..=v_step, delay)?;
+        clear_row(out, rows - v_step, cols - h_step..=h_step, delay)?;
+
+        h_step += 1;
+        v_step += 1;
+    }
+
+    Ok(())
+}
+
+fn clear_col(
+    out: &mut BufWriter<Stdout>,
+    col: u16,
+    range: RangeInclusive<u16>,
+    delay: u64,
+) -> anyhow::Result<()> {
+    for row in range {
+        out.queue(MoveTo(col, row))?;
+        out.queue(Print(" "))?;
+        out.flush()?;
+        thread::sleep(Duration::from_millis(delay));
+    }
+
+    Ok(())
+}
+
+fn clear_row(
+    out: &mut BufWriter<Stdout>,
+    row: u16,
+    range: RangeInclusive<u16>,
+    delay: u64,
+) -> anyhow::Result<()> {
+    for col in range {
+        out.queue(MoveTo(col, row))?;
+        out.queue(Print(" "))?;
+        out.flush()?;
+        thread::sleep(Duration::from_millis(delay));
     }
 
     Ok(())
