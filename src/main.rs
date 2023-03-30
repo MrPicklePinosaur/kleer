@@ -20,6 +20,7 @@ pub enum ClearMode {
         #[arg(short, long, value_parser = validation::greater_than_zero)]
         speed_scale: Option<f32>,
     },
+    Dissolve,
 }
 
 impl Default for ClearMode {
@@ -62,6 +63,7 @@ fn main() -> anyhow::Result<()> {
             dir.unwrap_or_default(),
             speed_scale.unwrap_or(1.0),
         )?,
+        ClearMode::Dissolve => clear_screen::dissolve(&mut out)?,
     };
 
     out.queue(cursor::Show)?;

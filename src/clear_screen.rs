@@ -93,3 +93,29 @@ pub fn wipe(
 
     Ok(())
 }
+
+/// Randomly delete characters in terminal
+pub fn dissolve(out: &mut BufWriter<Stdout>) -> anyhow::Result<()> {
+    let mut pos = vec![];
+
+    let (cols, rows) = terminal::size()?;
+
+    // TODO there should be more elegant way to do this
+    for i in 0..=cols {
+        for j in 0..=rows {
+            pos.push((i, j));
+        }
+    }
+
+    // TODO shuffle pos list
+
+    for (i, j) in pos.iter() {
+        out.queue(MoveTo(*i, *j))?;
+        out.queue(Print(" "))?;
+        out.flush()?;
+
+        thread::sleep(Duration::from_millis(1));
+    }
+
+    Ok(())
+}
