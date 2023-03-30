@@ -32,9 +32,21 @@ pub enum WipeDirection {
     Right,
 }
 
+impl Default for WipeDirection {
+    fn default() -> Self {
+        Self::Down
+    }
+}
+
 /// Wipe animation
-pub fn wipe(out: &mut BufWriter<Stdout>, dir: WipeDirection) -> anyhow::Result<()> {
+pub fn wipe(
+    out: &mut BufWriter<Stdout>,
+    dir: WipeDirection,
+    speed_scale: f32,
+) -> anyhow::Result<()> {
     let (cols, rows) = terminal::size()?;
+
+    let speed = (10 as f32 * 1.0 / speed_scale).round() as u64;
 
     match dir {
         WipeDirection::Up => {
@@ -42,7 +54,7 @@ pub fn wipe(out: &mut BufWriter<Stdout>, dir: WipeDirection) -> anyhow::Result<(
                 out.queue(cursor::MoveTo(0, rows - i))?;
                 out.queue(Clear(ClearType::CurrentLine))?;
                 out.flush()?;
-                thread::sleep(Duration::from_millis(10));
+                thread::sleep(Duration::from_millis(speed));
             }
         },
         WipeDirection::Down => {
@@ -50,7 +62,7 @@ pub fn wipe(out: &mut BufWriter<Stdout>, dir: WipeDirection) -> anyhow::Result<(
                 out.queue(cursor::MoveTo(0, i))?;
                 out.queue(Clear(ClearType::CurrentLine))?;
                 out.flush()?;
-                thread::sleep(Duration::from_millis(10));
+                thread::sleep(Duration::from_millis(speed));
             }
         },
         WipeDirection::Left => {
@@ -60,7 +72,7 @@ pub fn wipe(out: &mut BufWriter<Stdout>, dir: WipeDirection) -> anyhow::Result<(
                     out.queue(Print(" "))?;
                 }
                 out.flush()?;
-                thread::sleep(Duration::from_millis(10));
+                thread::sleep(Duration::from_millis(speed));
             }
         },
         WipeDirection::Right => {
@@ -70,10 +82,14 @@ pub fn wipe(out: &mut BufWriter<Stdout>, dir: WipeDirection) -> anyhow::Result<(
                     out.queue(Print(" "))?;
                 }
                 out.flush()?;
-                thread::sleep(Duration::from_millis(10));
+                thread::sleep(Duration::from_millis(speed));
             }
         },
     }
+
+    // reset cursor back to top
+    out.queue(cursor::MoveTo(0, 0))?;
+    out.flush()?;
 
     Ok(())
 }

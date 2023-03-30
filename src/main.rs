@@ -1,17 +1,24 @@
 mod clear_screen;
+mod validation;
 
 use std::io::{stdout, BufWriter, Write};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use clear_screen::WipeDirection;
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use crossterm::{
+    cursor,
+    terminal::{disable_raw_mode, enable_raw_mode},
+    QueueableCommand,
+};
 
-#[derive(Subcommand, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Subcommand, Copy, Clone)]
 pub enum ClearMode {
     Basic,
     Wipe {
         #[arg(short, long)]
-        dir: WipeDirection,
+        dir: Option<WipeDirection>,
+        #[arg(short, long, value_parser = validation::greater_than_zero)]
+        speed_scale: Option<f32>,
     },
 }
 
@@ -46,10 +53,18 @@ fn main() -> anyhow::Result<()> {
 
     let mut out = BufWriter::new(stdout());
 
+    out.queue(cursor::Hide)?;
+
     match cli.clear_mode {
         ClearMode::Basic => clear_screen::basic(&mut out)?,
-        ClearMode::Wipe { dir } => clear_screen::wipe(&mut out, dir)?,
+        ClearMode::Wipe { dir, speed_scale } => clear_screen::wipe(
+            &mut out,
+            dir.unwrap_or_default(),
+            speed_scale.unwrap_or(1.0),
+        )?,
     };
+
+    out.queue(cursor::Show)?;
 
     Ok(())
 }
