@@ -1,11 +1,11 @@
 [package]
-name = "kuuhaku"
+name = "kleer"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["Daniel Liu <mr.picklepinosaur@gmail.com>"]
 description = "clear your terminal with style"
-repository = "https://github.com/MrPicklePinosaur/kuuhaku"
+repository = "https://github.com/MrPicklePinosaur/kleer"
 
 [features]
 

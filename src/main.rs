@@ -31,8 +31,8 @@ impl Default for ClearMode {
 }
 
 #[derive(Parser)]
-#[command(name = "kuuhaku")]
-#[command(bin_name = "kuuhaku")]
+#[command(name = "kleer")]
+#[command(bin_name = "kleer")]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
